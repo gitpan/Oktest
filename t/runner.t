@@ -1,5 +1,5 @@
 ###
-### $Release: 0.0100 $
+### $Release: 0.0101 $
 ### $Copyright: copyright(c) 2010-2011 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###

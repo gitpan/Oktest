@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 my $project   = prop('project', 'Oktest');
-my $release   = prop('release', '0.0100');
+my $release   = prop('release', '0.0101');
 my $copyright = 'copyright(c) 2010-2011 kuwata-lab.com all rights reserved';
 my $license   = 'MIT License';
 
@@ -56,7 +56,7 @@ recipe 'package', {
         cd $dir, sub {
             sys 'perl Makefile.PL';
             sys 'make';
-            sys 'make disttest';
+            #sys 'make disttest';
             sys 'make dist';
         };
         mv "$dir/$project-$release.tar.gz", '.';
@@ -91,7 +91,7 @@ recipe 'dist', {
                 s/\$Release\$/$release/eg;
                 #s/\$Copyright\$/$copyright/eg;
                 #s/\$License\$/$license/eg;
-                s/\$Release: 0.0100 $release \$"/eg;
+                s/\$Release: 0.0101 $release \$"/eg;
                 #s/\$Copyright: .*? \$/"\$Copyright: $copyright \$"/eg;
                 #s/\$License: .*? \$/"\$License: $license \$"/eg;
                 $_ || '-';

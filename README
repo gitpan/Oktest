@@ -1,7 +1,7 @@
 NAME
     Oktest - a new-style testing library
 
-    ($Release: 0.0100 $)
+    ($Release: 0.0101 $)
 
 SYNOPSIS
             use strict;

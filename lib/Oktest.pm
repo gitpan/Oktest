@@ -1,5 +1,5 @@
 ###
-### $Release: 0.0100 $
+### $Release: 0.0101 $
 ### $Copyright: copyright(c) 2010-2011 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###
@@ -14,7 +14,7 @@ package Oktest;
 use base 'Exporter';
 our @EXPORT    = qw(OK pre_cond topic case_when spec before after before_all after_all at_end skip_when TODO);
 our @EXPORT_OK = qw(run main with);
-our $VERSION   = ('$Release: 0.0100 $' =~ /\d+(\.\d+)*/ && $&);
+our $VERSION   = ('$Release: 0.0101 $' =~ /\d+(\.\d+)*/ && $&);
 our @__assertion_objects = ();
 our @__at_end_blocks  = ();
 
@@ -567,7 +567,8 @@ sub not_match {
 }
 
 sub is_a {
-    no warnings 'misc';  # suppress warning of "Can't locate package %s for %s::ISA"
+    no warnings 'misc';    # suppress warning of "Can't locate package %s for %s::ISA" (for Perl 5.8)
+    no warnings 'syntax';  # suppress warning of "Can't locate package %s for %s::ISA" (for Perl 5.10 or later)
     my ($this, $expected) = @_;
     $this->_done();
     #return _assert { $_[0]->isa($_[1]) } ' instanceof ', 0, @_;
@@ -583,7 +584,8 @@ sub is_a {
 }
 
 sub not_a {
-    no warnings 'misc';  # suppress warning of "Can't locate package %s for %s::ISA"
+    no warnings 'misc';    # suppress warning of "Can't locate package %s for %s::ISA" (for Perl 5.8)
+    no warnings 'syntax';  # suppress warning of "Can't locate package %s for %s::ISA" (for Perl 5.10 or later)
     my ($this, $expected) = @_;
     $this->_done();
     #return _assert { ! $_[0]->isa($_[1]) } ' instanceof ', 0, @_;
@@ -2162,7 +2164,7 @@ __END__
 
 Oktest - a new-style testing library
 
-($Release: 0.0100 $)
+($Release: 0.0101 $)
 
 
 =head1 SYNOPSIS
