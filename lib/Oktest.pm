@@ -1,5 +1,5 @@
 ###
-### $Release: 0.0101 $
+### $Release: 0.0102 $
 ### $Copyright: copyright(c) 2010-2011 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###
@@ -14,7 +14,7 @@ package Oktest;
 use base 'Exporter';
 our @EXPORT    = qw(OK pre_cond topic case_when spec before after before_all after_all at_end skip_when TODO);
 our @EXPORT_OK = qw(run main with);
-our $VERSION   = ('$Release: 0.0101 $' =~ /\d+(\.\d+)*/ && $&);
+our $VERSION   = ('$Release: 0.0102 $' =~ /\d+(\.\d+)*/ && $&);
 our @__assertion_objects = ();
 our @__at_end_blocks  = ();
 
@@ -2164,14 +2164,14 @@ __END__
 
 Oktest - a new-style testing library
 
-($Release: 0.0101 $)
+($Release: 0.0102 $)
 
 
 =head1 SYNOPSIS
 
 	use strict;
 	use warnings;
-	no warnings 'void';   # suppress 'Useless use of ... in void context'
+	no warnings 'void';   # suppress warning 'Useless use of ... in void context'
 	use Oktest;
 
 	topic "Example1", sub {
@@ -2230,16 +2230,16 @@ Oktest allows you to write your test code in structured format.
 =item *
 
 'topic' represents topic or subject of test.
- Normally, it represents ClassName or method_name().
+Normally, it represents ClassName, method_name() or feature name.
 
 =item *
 
 'spec' represens specification details.
- You can write description in a free text.
+You can write description in a free text.
 
 =item *
 
-'case_when' represens text context.
+'case_when' represens test context or condition.
 
 =back
 
@@ -2247,7 +2247,7 @@ Example (01_basic.t):
 
 	use strict;
 	use warnings;
-	no warnings 'void';   # suppress 'Useless use of ... in void context'
+	no warnings 'void';   # suppress warning 'Useless use of ... in void context'
 	use Oktest;
 
 	## 'topic' represents topic of test (such as ClassName or method_name())
@@ -2294,7 +2294,7 @@ Output:
 	##   * method_name()
 	ok 1 - 1 + 1 should be equal to 2.
 	ok 2 - 'x' repeats string.
-	## elapsed: 0.000
+	## ok:2, failed:0, error:0, skipped:0, todo:0  (elapsed: 0.000)
 
 Points:
 
@@ -2327,6 +2327,8 @@ You don't need to update test plan manually, wow!
 
 =back
 
+If you want to know internal mechanism of Oktest, see L</"Oktest Internal"> section.
+
 
 =head2 Assertions
 
@@ -2337,7 +2339,7 @@ Example (02_assertions.t):
 
 	use strict;
 	use warnings;
-	no warnings 'void';   # suppress 'Useless use of ... in void context'
+	no warnings 'void';   # suppress warning 'Useless use of ... in void context'
 	use Oktest;
 
 	topic "Assertion Example", sub {
@@ -2438,7 +2440,7 @@ Assertion methods are chainable.
 	OK ($obj)->has('name', "Haruhi")->has('team', "SOS");
 
 
-=head2 Setup/Teadown
+=head2 Setup/Teardown
 
 Oktest provides fixtures (= setup or teardown function).
 
@@ -2466,7 +2468,7 @@ Example (04_fixture.t):
 
 	use strict;
 	use warnings;
-	no warnings 'void';   # suppress 'Useless use of ... in void context'
+	no warnings 'void';   # suppress warning 'Useless use of ... in void context'
 	use Oktest;
 
 	topic "Parent", sub {
@@ -2522,7 +2524,7 @@ Output example:
 	ok 4 - B4
 	  = [Child] after_all
 	= [Parent] after_all
-	## elapsed: 0.000
+	## ok:4, failed:0, error:0, skipped:0, todo:0  (elapsed: 0.000)
 
 Context data (= a hash object) is passed to 'before' and 'after' blocks.
 Of course, you can use outer-closure variables instead of context data.
@@ -2606,7 +2608,7 @@ Migration example (06_migrate.t):
 
 	use strict;
 	use warnings;
-	no warnings 'void';   # suppress 'Useless use of ... in void context'
+	no warnings 'void';   # suppress warning 'Useless use of ... in void context'
 
 	use Oktest;
 	use Oktest::Migration::TestMore;    # imports migration helpers
@@ -2656,18 +2658,18 @@ You can filter topics or specs by pattern.
 In default, Oktest reports results in TAP style format.
 You can change it by '--style' or '-s' option.
 
-Plain style ('-s simple' or '-ss'):
+Plain style ('-s plain' or '-sp'):
 
-	$ perl examples/01_basic.t -ss
+	$ perl examples/01_basic.t -sp
 	..
-	## elapsed: 0.000
+	## ok:2, failed:0, error:0, skipped:0, todo:0  (elapsed: 0.000)
 
 Simple style ('-s simple' or '-ss'):
 
 	$ perl examples/01_basic.t -ss
 	* ClassName
 	  * method_name(): ..
-	## elapsed: 0.000
+	## ok:2, failed:0, error:0, skipped:0, todo:0  (elapsed: 0.000)
 
 Verbose style ('-s verbose' or '-sv'):
 
@@ -2676,7 +2678,7 @@ Verbose style ('-s verbose' or '-sv'):
 	  * method_name()
 	    - [ok] 1 + 1 should be equal to 2.
 	    - [ok] 'x' repeats string.
-	## elapsed: 0.001
+	## ok:2, failed:0, error:0, skipped:0, todo:0  (elapsed: 0.000)
 
 
 =head2 Command-line Interface
@@ -2703,6 +2705,75 @@ Oktest provides 'oktest.pl' script for command-line interface.
 	$ oktest.pl --topic='/^\w+$/' t          # regexp
 
 
+=head2 Oktest Internal
+
+Internal of Oktest consist of three stages:
+(1) create tee of topics,
+(2) counts number of specs,
+(3) calls spec blocks.
+
+For example:
+
+	topic "ClassName", sub {
+	    topic "method_foo()", sub {
+	        sub "spec1", sub { ... };
+	        sub "spec2", sub { ... };
+	    };
+	    topic "method_bar()", sub {
+	        sub "spec3", sub { ... };
+	        sub "spec4", sub { ... };
+	    };
+	};
+	Oktest::main();
+
+The above code is equvarent roughly to the follwing:
+
+	## Step (1): creates tree of topics
+	## (Notice that topic blocks are called but spec blocks are not called yet)
+	my $t1 = TopicObject->new("ClassName");
+	my $t2 = TopicObject->new("method_foo()", $t1);
+	$t2->add_spec(SpecObject->new("spec1", sub { ... }));
+	$t2->add_spec(SpecObject->new("spec2", sub { ... }));
+	my $t3 = TopicObject->new("method_bar()", $t1);
+	$t3->add_spec(SpecObject->new("spec3", sub { ... }));
+	$t3->add_spec(SpecObject->new("spec4", sub { ... }));
+
+	## Step (2): counts number of specs and prints test plan
+	my $n = $t1->_count_specs();
+	print "1..$n\n";
+
+	## Step (3): call spec blocks and prints results
+	for my $to ($t1->{topics}) {         ## $to is TopicObject
+	    for my $so ($to->{specs}) {      ## $so is SpecObject
+	        undef $@;
+	        eval { $so->{block}->() };
+	        print $@ ? "not ok - " : "ok - ";
+	        print $so->{desc}, "\n";
+	    }
+	}
+
+The above shows difference between Oktest and Test::More.
+
+=over 1
+
+=item *
+
+Test::More requries you to maintain test plan by yourself,
+on the other hand Oktest counts test plan automatically.
+
+=item *
+
+Test::More prints result ('ok' or 'not ok') for each assertions,
+on the other hand Oktest prints result for each specs.
+
+=item *
+
+It is difficult to do only a certain test in Test::More, on the other hand
+it is easy to filter topic or spec in Oktest.
+
+=back
+
+
 =head1 REFERENCE
 
 
@@ -2717,6 +2788,8 @@ Represents spec topic, for example ClassName, method_name(), or feature-name.
 
 Block of 'topic()' can contain other 'topic()', 'case_when()', and 'spec()'.
 
+See L</"Structured Test Code"> section for sample code.
+
 
 =item case_when(String description, Code block)
 
@@ -2725,7 +2798,9 @@ or "when argument is not passed...".
 
 This is almost same as 'topic()', but intended to represent test context.
 
-Block of 'case_when()' can contain 'blocks()', 'spec()', or other 'case_when()'.
+Block of 'case_when()' can contain 'block()', 'spec()', or other 'case_when()'.
+
+See L</"Structured Test Code"> section for sample code.
 
 
 =item spec(String description[, Code block])
@@ -2743,12 +2818,30 @@ Body of 'spec()' can't contain both 'topics()', 'case_when()' nor 'spec()'.
 
 This function should be called in blocks of 'topic()' or 'case_when()'.
 
+See L</"Structured Test Code"> section for sample code.
+
+
+=item OK(Any actual)
+
+Represents assertion.
+
+See L</"Assertions"> section for sample code.
+
+If you call OK() but no assertion specified, Oktest will report you about it.
+
+	## Assertion 'is_a' specified
+	OK (Class->new())->is_a('Class');
+	## No assertion specified, and Oktest will report you about it
+	OK (Class->new())->isa('Class');   # 'isa' is not an assertion
+
 
 =item skip_when(Boolean condition, String reason)
 
 If condition is true then the rest assertions in the same spec are skipped.
 
 This should be called in blocks of 'spec()'.
+
+See L</"Skip and TODO"> section for sample code.
 
 
 =item TODO(String description)
@@ -2757,13 +2850,83 @@ Represents that the test code is not wrote yet.
 
 This should be called in blocks of 'spec()'.
 
+See L</"Skip and TODO"> section for sample code.
+
+
+=item before(Code block)
+
+Register code block to be called before each spec.
+If topics are nested then outer 'before' block is called before inner 'before' block.
+
+This is equivarent to setUp() method in xUnit.
+
+See L</"Setup/Teardown"> section for sample code.
+
+
+=item after(Code block)
+
+Register code block to be called after each spec.
+If topics are nested then inner 'after' block is called before outer 'after' block.
+
+This is equivarent to tearDown() method in xUnit.
+
+See L</"Setup/Teardown"> section for sample code.
+
+
+=item before_all(Code block)
+
+Register code block to be called before all specs.
+In other words, this code block is called only once.
+
+See L</"Setup/Teardown"> section for sample code.
+
+
+=item after_all(Code block)
+
+Register code block to be called after all specs.
+In other words, this code block is called only once.
+
+See L</"Setup/Teardown"> section for sample code.
+
+
+=item at_exit(Code block)
+
+Register code block to be called after that spec.
+This is very convenient to specify 'tearDown' operation for a certaion spec.
+
+This should be called in spec block.
+
+See L</"Setup/Teardown"> section for sample code.
+
+
+=item Oktest::main()
+
+Runs all specs and reports result.
+
+This should be called as 'Oktest::main()', not 'main()'.
+
+See L</"Structured Test Code"> section for sample code.
+
 
 =back
+
+
+=head2 package Oktest::Migration::TestMore
+
+See L</"Test::More Migration"> section.
 
 
 =head1 TODO
 
 =over 1
+
+=item *
+
+[_] User-Defined Assertion
+
+=item *
+
+[_] Colorized Output
 
 =item *
 
@@ -2788,5 +2951,6 @@ makoto kuwata E<lt>kwa@kuwata-lab.comE<gt>
 =head1 LICENSE
 
 MIT License
+
 
 =cut

@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Oktest
-version:            0.0101
+version:            0.0102
 abstract:           a new-style testing library
 author:
     - makoto kuwata <kwa@kuwata-lab.com>
