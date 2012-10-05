@@ -1,5 +1,5 @@
 ###
-### $Release: 0.0102 $
+### $Release: 0.0103 $
 ### $Copyright: copyright(c) 2010-2011 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###
@@ -14,7 +14,7 @@ package Oktest;
 use base 'Exporter';
 our @EXPORT    = qw(OK pre_cond topic case_when spec before after before_all after_all at_end skip_when TODO);
 our @EXPORT_OK = qw(run main with);
-our $VERSION   = ('$Release: 0.0102 $' =~ /\d+(\.\d+)*/ && $&);
+our $VERSION   = ('$Release: 0.0103 $' =~ /\d+(\.\d+)*/ && $&);
 our @__assertion_objects = ();
 our @__at_end_blocks  = ();
 
@@ -95,9 +95,11 @@ sub at_end(&) {
 }
 
 sub __at_end_of_spec {
-    for my $block (@Oktest::__at_end_blocks) {
+    ## run closures in reverse order
+    for my $block (reverse(@Oktest::__at_end_blocks)) {
         $block->();
     }
+    @Oktest::__at_end_blocks = ();
 }
 
 sub skip_when {
@@ -116,7 +118,7 @@ our %_default_opts = (
     reporter => undef,
     style    => 'tap',
     spec     => undef,
-    topic   => undef,
+    topic    => undef,
     report_skipped => 0==1,
     report_todo    => 0==1,
 );
@@ -1195,7 +1197,7 @@ sub run_spec {
     my ($this, $so, $depth) = @_;        ## $so is a SpecObject
     $this->reporter->enter_spec($so, $depth);
     my $context = {
-        spec   => $so->{desc},
+        spec  => $so->{desc},
         topic => $so->{parent}->{name},
     };
     my $errmsg;
@@ -2164,7 +2166,7 @@ __END__
 
 Oktest - a new-style testing library
 
-($Release: 0.0102 $)
+($Release: 0.0103 $)
 
 
 =head1 SYNOPSIS
@@ -2708,7 +2710,7 @@ Oktest provides 'oktest.pl' script for command-line interface.
 =head2 Oktest Internal
 
 Internal of Oktest consist of three stages:
-(1) create tee of topics,
+(1) create tree of topics,
 (2) counts number of specs,
 (3) calls spec blocks.
 

@@ -1,12 +1,12 @@
 ###
-### $Release: 0.0102 $
+### $Release: 0.0103 $
 ### $Copyright: copyright(c) 2010-2011 kuwata-lab.com all rights reserved $
 ### $License: MIT License $
 ###
 
 use strict;
 use warnings;
-use Test::More tests => 29;
+use Test::More tests => 33;
 
 
 use Oktest;
@@ -372,23 +372,42 @@ for (TARGET('Oktest::Runner::DefaultRunner')) {
             is($Oktest::__assertion_objects[0]->{actual}, "Mikuru");
         }
 
-        #: calls 'at_end' block.
+        #: calls 'at_end' blocks in reverse order.
         {
             Oktest::__clear();
-            my $called = 0==1;
+            my @called = ();
             topic "Example", sub {
                 spec "example", sub {
-                    at_end {
-                        $called = 1==1;
-                    };
-                    is($called, 0==1, "at_end() is not called yet.");
+                    at_end { push(@called, 1); };
+                    at_end { push(@called, 2); };
+                    at_end { push(@called, 3); };
+                    is(scalar(@called), 0, "at_end() is not called yet.");
                     die "SomethingError";
                 };
             };
             Oktest::Util::capture_stdouterr {
                 Oktest::run();
             };
-            is($called, 1==1, "at_end() is called in spite of 'die' called.");
+            is(scalar(@called), 3, "at_end() is called in spite of 'die' called.");
+            is_deeply(\@called, [3,2,1], "at_end() is called in reverse order.");
+        }
+
+        #: clears 'at_end' blocks list
+        {
+            Oktest::__clear();
+            my $called = 0;
+            topic "Example", sub {
+                spec "example", sub {
+                    is(scalar(@Oktest::__at_end_blocks), 0);
+                    at_end { $called = 1; };
+                    is(scalar(@Oktest::__at_end_blocks), 1);
+                    die "SomethingError";
+                };
+            };
+            Oktest::Util::capture_stdouterr {
+                Oktest::run();
+            };
+            is(scalar(@Oktest::__at_end_blocks), 0, "clears 'at_end' blocks list");
         }
 
     }

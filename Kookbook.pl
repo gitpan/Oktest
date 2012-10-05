@@ -2,8 +2,8 @@ use strict;
 use warnings;
 
 my $project   = prop('project', 'Oktest');
-my $release   = prop('release', '0.0102');
-my $copyright = 'copyright(c) 2010-2011 kuwata-lab.com all rights reserved';
+my $release   = prop('release', '0.0103');
+my $copyright = 'copyright(c) 2010-2012 kuwata-lab.com all rights reserved';
 my $license   = 'MIT License';
 
 $kook_default = 'test';
@@ -91,7 +91,7 @@ recipe 'dist', {
                 s/\$Release\$/$release/eg;
                 #s/\$Copyright\$/$copyright/eg;
                 #s/\$License\$/$license/eg;
-                s/\$Release: 0.0102 $release \$"/eg;
+                s/\$Release: 0.0103 $release \$"/eg;
                 #s/\$Copyright: .*? \$/"\$Copyright: $copyright \$"/eg;
                 #s/\$License: .*? \$/"\$License: $license \$"/eg;
                 $_ || '-';

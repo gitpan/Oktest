@@ -1,7 +1,7 @@
 NAME
     Oktest - a new-style testing library
 
-    ($Release: 0.0102 $)
+    ($Release: 0.0103 $)
 
 SYNOPSIS
             use strict;
@@ -489,7 +489,7 @@ DESCRIPTION
             $ oktest.pl --topic='/^\w+$/' t          # regexp
 
   Oktest Internal
-    Internal of Oktest consist of three stages: (1) create tee of topics,
+    Internal of Oktest consist of three stages: (1) create tree of topics,
     (2) counts number of specs, (3) calls spec blocks.
 
     For example:
